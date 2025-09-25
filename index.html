@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <title>ArcGIS Line Layer Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body, html { margin:0; height:100%; }
+    #map { height:100%; width:100%; }
+
+    .custom-popup {
+      background: #1e293b;
+      color: #f9fafb;
+      padding: 12px;
+      border-radius: 12px;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+      font-family: "Segoe UI", sans-serif;
+      max-width: 260px;
+    }
+    .custom-popup h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: #38bdf8;
+    }
+    .custom-popup p {
+      margin: 3px 0;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/esri-leaflet"></script>
+  <script>
+    // Inisialisasi map
+    var map = L.map('map').setView([20.7967, -156.3319], 8);
+
+    // Basemap
+    var basemap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Feature Layer polyline dari ArcGIS (Hawaii Trails)
+    var trailsLayer = L.esri.featureLayer({
+      url: "https://services2.arcgis.com/CQ9Im9uXEz3Gd18P/ArcGIS/rest/services/Hawaii_Trails/FeatureServer/0",
+      style: function () {
+        return {
+          color: "#38bdf8",
+          weight: 3,
+          opacity: 0.85
+        };
+      }
+    }).addTo(map);
+
+    // Popup tiap jalur
+    trailsLayer.bindPopup(function (layer) {
+      var props = layer.feature.properties;
+      return `
+        <div class="custom-popup">
+          <h3>${props.NAME || "Jalur Tanpa Nama"}</h3>
+          <p><b>Panjang:</b> ${props.LENGTH_MI ? props.LENGTH_MI + " mil" : "Tidak diketahui"}</p>
+          <p><b>Tipe:</b> ${props.TRAILTYPE || "N/A"}</p>
+          <p><b>Deskripsi:</b> ${props.USES || "Tidak ada info"}</p>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>
