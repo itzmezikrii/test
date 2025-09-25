@@ -1,72 +1,96 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <title>ArcGIS Line Layer Demo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peta Jalur ArcGIS Modern</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    body, html { margin:0; height:100%; }
-    #map { height:100%; width:100%; }
-
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
     .custom-popup {
-      background: #1e293b;
-      color: #f9fafb;
+      background: #1e1e2f;
+      color: #f0f0f0;
       padding: 12px;
       border-radius: 12px;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.5);
-      font-family: "Segoe UI", sans-serif;
-      max-width: 260px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 220px;
     }
     .custom-popup h3 {
-      margin: 0 0 6px;
+      margin: 0 0 8px 0;
       font-size: 16px;
-      color: #38bdf8;
+      color: #4da3ff;
     }
-    .custom-popup p {
-      margin: 3px 0;
-      font-size: 13px;
+    .leaflet-popup-content-wrapper {
+      background: transparent;
+      box-shadow: none;
+    }
+    .leaflet-popup-tip {
+      background: #1e1e2f;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
+  <!-- Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Esri Leaflet -->
   <script src="https://unpkg.com/esri-leaflet"></script>
+
   <script>
     // Inisialisasi map
-    var map = L.map('map').setView([20.7967, -156.3319], 8);
+    var map = L.map('map').setView([37.75, -122.45], 10);
 
-    // Basemap
-    var basemap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    // Basemap dari Esri
+    var esriStreet = L.esri.basemapLayer("Streets");
+    var esriDark = L.esri.basemapLayer("DarkGray");
+    var esriLight = L.esri.basemapLayer("Gray");
+    var esriSat = L.esri.basemapLayer("Imagery");
 
-    // Feature Layer polyline dari ArcGIS (Hawaii Trails)
-    var trailsLayer = L.esri.featureLayer({
-      url: "https://services2.arcgis.com/CQ9Im9uXEz3Gd18P/ArcGIS/rest/services/Hawaii_Trails/FeatureServer/0",
+    esriStreet.addTo(map); // default
+
+    // Layer jalur dari ArcGIS Server
+    var roads = L.esri.featureLayer({
+      url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/1",
       style: function () {
-        return {
-          color: "#38bdf8",
-          weight: 3,
-          opacity: 0.85
-        };
+        return { color: "#4da3ff", weight: 2 };
       }
     }).addTo(map);
 
-    // Popup tiap jalur
-    trailsLayer.bindPopup(function (layer) {
-      var props = layer.feature.properties;
-      return `
-        <div class="custom-popup">
-          <h3>${props.NAME || "Jalur Tanpa Nama"}</h3>
-          <p><b>Panjang:</b> ${props.LENGTH_MI ? props.LENGTH_MI + " mil" : "Tidak diketahui"}</p>
-          <p><b>Tipe:</b> ${props.TRAILTYPE || "N/A"}</p>
-          <p><b>Deskripsi:</b> ${props.USES || "Tidak ada info"}</p>
-        </div>
-      `;
-    });
+    // Popup modern
+    roads.bindPopup(function (layer) {
+  let props = layer.feature.properties;
+  return `
+    <div class="custom-popup">
+      <h3>${props.ROUTE_NAME || props.NAME || "Jalur Tanpa Nama"}</h3>
+      <b>Nomor:</b> ${props.RT_NUMBER || "-"}<br>
+      <b>State:</b> ${props.STATE || "-"}
+    </div>
+  `;
+});
+    // Pilihan basemap
+    var baseMaps = {
+      "🛣️ Esri Street": esriStreet,
+      "🌙 Esri Dark": esriDark,
+      "☀️ Esri Light": esriLight,
+      "🛰️ Esri Satellite": esriSat
+    };
+
+    L.control.layers(baseMaps, { "🚢 Jalur ArcGIS": roads }).addTo(map);
+
+    // Hilangin prefix "Leaflet"
+    map.attributionControl.setPrefix(false);
   </script>
 </body>
 </html>
